@@ -114,6 +114,4 @@ if __name__ == '__main__':
         sys.exit(main())
     except Exception as e:
         print("UNKNOWN - Error: %s" % (e))
-        if verbose:
-            traceback.print_tb(sys.exc_info()[2])
         sys.exit(3)
