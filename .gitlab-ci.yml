@@ -1,0 +1,19 @@
+image: ubuntu:latest
+
+before_script:
+  - apt-get update
+  - DEBIAN_FRONTEND="noninteractive" apt -y install curl jq grep wget
+
+after_script:
+  - ./get_dockerhub_limit.sh
+
+testjob:
+  stage: test
+  script:
+    - wget -qO - icanhazip.com
+
+deployjob:
+  stage: deploy
+  script:
+    - wget -qO - icanhazip.com
+
