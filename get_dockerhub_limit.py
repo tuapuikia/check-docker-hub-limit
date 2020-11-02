@@ -79,6 +79,8 @@ class DockerHub(object):
         if self.verbose:
             print(resp_headers)
 
+        limit, remaining = ''
+
         if "RateLimit-Limit" in resp_headers and "RateLimit-Remaining" in resp_headers:
             limit = self.limit_extractor(resp_headers["RateLimit-Limit"])
             remaining = self.limit_extractor(resp_headers["RateLimit-Remaining"])
