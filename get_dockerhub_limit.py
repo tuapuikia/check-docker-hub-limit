@@ -83,7 +83,8 @@ class DockerHub(object):
             limit = self.limit_extractor(resp_headers["RateLimit-Limit"])
             remaining = self.limit_extractor(resp_headers["RateLimit-Remaining"])
         else:
-            raise Exception('Cannot fetch Docker Hub registry limits')
+            #raise Exception('Cannot fetch Docker Hub registry limits')
+            print("Seems no limit apply. Using a registry proxy already?")
 
         print("Docker Hub registry limit " + limit + " with remaining pulls " + remaining)
         return (limit, remaining)
