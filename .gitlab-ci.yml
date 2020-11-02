@@ -5,16 +5,9 @@ before_script:
   - DEBIAN_FRONTEND="noninteractive" apt -y install python3 python3-pip
   - pip3 install -r requirements.txt
 
-after_script:
-  - python3 get_dockerhub_limit.py
-
-testjob:
+fetch_limits:
   stage: test
   script:
-    - wget -qO - icanhazip.com
+    - python3 get_dockerhub_limit.py
 
-deployjob:
-  stage: deploy
-  script:
-    - wget -qO - icanhazip.com
 
