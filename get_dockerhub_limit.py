@@ -79,17 +79,17 @@ class DockerHub(object):
         if self.verbose:
             print(resp_headers)
 
-        limit, remaining = ''
-
         if "RateLimit-Limit" in resp_headers and "RateLimit-Remaining" in resp_headers:
             limit = self.limit_extractor(resp_headers["RateLimit-Limit"])
             remaining = self.limit_extractor(resp_headers["RateLimit-Remaining"])
+
+            print("Docker Hub registry limit " + limit + " with remaining pulls " + remaining)
+            return (limit, remaining)
+
         else:
             #raise Exception('Cannot fetch Docker Hub registry limits')
             print("Seems no limit apply. Using a registry proxy already?")
-
-        print("Docker Hub registry limit " + limit + " with remaining pulls " + remaining)
-        return (limit, remaining)
+            return (0, 0)
 
 def main():
     parser = ArgumentParser(description="get_dockerhub_limits (Version: %s)" % (VERSION))
