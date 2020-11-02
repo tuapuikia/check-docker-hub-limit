@@ -2,10 +2,10 @@ image: ubuntu:latest
 
 before_script:
   - apt-get update
-  - DEBIAN_FRONTEND="noninteractive" apt -y install curl jq grep wget
+  - DEBIAN_FRONTEND="noninteractive" apt -y install python3
 
 after_script:
-  - ./get_dockerhub_limit.sh
+  - python3 get_dockerhub_limit.py
 
 testjob:
   stage: test
