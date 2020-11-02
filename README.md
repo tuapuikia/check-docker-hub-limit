@@ -22,20 +22,9 @@ pip3 install -r requirements.txt
 ## Usage
 
 ```
-python3 check_docker_hub_limit.py --help
-usage: check_docker_hub_limit.py [-h] [-v] [-t TIMEOUT]
-
-get_dockerhub_limits (Version: 0.0.1)
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -v, --verbose         increase output verbosity
-  -t TIMEOUT, --timeout TIMEOUT
-                        Timeout in seconds (default 10s)
-
 usage: check_docker_hub_limit.py [-h] [-w WARNING] [-c CRITICAL] [-v] [-t TIMEOUT]
 
-get_dockerhub_limits (Version: 0.0.1)
+Version: 0.0.1
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -68,6 +57,7 @@ CRITICAL - Docker Hub: Limit is 5000 remaining 4998|'limit'=5000 'remaining'=499
 ## Monitoring Integration
 
 You can use this script in your Nagios/Icinga/Naemon/Sensu/etc. monitoring environments.
-It implements the Monitoring Plugins API and returns performance data metrics.
+It implements the [Monitoring Plugins API](https://www.monitoring-plugins.org/doc/guidelines.html)
+and returns performance data metrics.
 
 
