@@ -32,8 +32,38 @@ optional arguments:
   -v, --verbose         increase output verbosity
   -t TIMEOUT, --timeout TIMEOUT
                         Timeout in seconds (default 10s)
+
+usage: check_docker_hub_limit.py [-h] [-w WARNING] [-c CRITICAL] [-v] [-t TIMEOUT]
+
+get_dockerhub_limits (Version: 0.0.1)
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -w WARNING, --warning WARNING
+                        warning threshold for remaining
+  -c CRITICAL, --critical CRITICAL
+                        critical threshold for remaining
+  -v, --verbose         increase output verbosity
+  -t TIMEOUT, --timeout TIMEOUT
+                        Timeout in seconds (default 10s)
 ```
 
+Examples:
+
+```
+$ python3 check_docker_hub_limit.py
+OK - Docker Hub: Limit is 5000 remaining 4997|'limit'=5000 'remaining'=4997
+```
+
+```
+$ python3 check_docker_hub_limit.py -w 10000 -c 3000
+WARNING - Docker Hub: Limit is 5000 remaining 4999|'limit'=5000 'remaining'=4999
+```
+
+```
+$ python3 check_docker_hub_limit.py -w 10000 -c 5000
+CRITICAL - Docker Hub: Limit is 5000 remaining 4998|'limit'=5000 'remaining'=4998
+```
 
 ## Monitoring Integration
 

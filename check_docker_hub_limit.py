@@ -12,15 +12,28 @@ import os
 import traceback
 import requests
 from signal import signal, alarm, SIGALRM
+from functools import partial
 from argparse import ArgumentParser
 
 VERSION = '0.0.1'
 
-class DockerHubError(Exception):
-	pass
+# Follows https://www.monitoring-plugins.org/doc/guidelines.html
+STATES = { 0: "OK", 1: "WARNING", 2: "CRITICAL", 3: "UNKNOWN" }
 
-def _alarm_handler(signum, frame):
-	raise DockerHubError('Timeout exceeded.')
+def do_output(text, state=0,perfdata=None,name='Docker Hub'):
+    if perfdata is None:
+        perfdata = {}
+
+    o = STATES.get(state) + ' - ' + name + ': ' + str(text)
+
+    if perfdata:
+        o += '|' + ' '.join(["'" + key + "'" + '=' + str(value) for key, value in perfdata.items()])
+
+    print(o)
+    sys.exit(state)
+
+def handle_sigalrm(signum, frame, timeout=None):
+    do_output('Plugin timed out after %d seconds' % timeout, 3)
 
 class DockerHub(object):
     def __init__(self, verbose, username, password):
@@ -41,6 +54,20 @@ class DockerHub(object):
                 return split_arr[0]
         else:
             return str_raw
+
+    # Implements https://www.monitoring-plugins.org/doc/guidelines.html 
+    def eval_thresholds(self, val, warn, crit):
+        state = 0
+
+        if warn:
+            if float(val) < float(warn):
+                state = 1
+
+        if crit:
+            if float(val) < float(crit):
+                state = 2
+
+        return state
 
     def get_token(self):
         # User has passed in own credentials, or we need anonymous access.
@@ -79,29 +106,27 @@ class DockerHub(object):
         if self.verbose:
             print(resp_headers)
 
+        limit = 0
+        remaining = 0
+
         if "RateLimit-Limit" in resp_headers and "RateLimit-Remaining" in resp_headers:
             limit = self.limit_extractor(resp_headers["RateLimit-Limit"])
             remaining = self.limit_extractor(resp_headers["RateLimit-Remaining"])
 
-            print("Docker Hub registry limit " + limit + " with remaining pulls " + remaining)
-            return (limit, remaining)
-
-        else:
-            #raise Exception('Cannot fetch Docker Hub registry limits')
-            print("Seems no limit apply. Using a registry proxy already?")
-            return (0, 0)
+        return (limit, remaining)
 
 def main():
-    parser = ArgumentParser(description="get_dockerhub_limits (Version: %s)" % (VERSION))
+    parser = ArgumentParser(description="Version: %s" % (VERSION))
 
-
+    parser.add_argument('-w', '--warning', type=int, default=100, help="warning threshold for remaining")
+    parser.add_argument('-c', '--critical', type=int, default=50, help="critical threshold for remaining")
     parser.add_argument("-v", "--verbose", action="store_true", help="increase output verbosity")
     parser.add_argument("-t", "--timeout", help="Timeout in seconds (default 10s)", type=int, default=10)
     args = parser.parse_args(sys.argv[1:])
 
     verbose = args.verbose
 
-    signal(SIGALRM, _alarm_handler)
+    signal(SIGALRM, partial(handle_sigalrm, timeout=args.timeout))
     alarm(args.timeout)
 
     # TODO: Test and document
@@ -110,7 +135,19 @@ def main():
 
     dh = DockerHub(verbose, username, password)
 
-    dh.get_registry_limits()
+    (limit, remaining) = dh.get_registry_limits()
+
+    if limit == 0 and remaining == 0:
+        do_output('No limits found. You are safe and probably use a caching proxy already.', 0)
+    else:
+        state = dh.eval_thresholds(remaining, args.warning, args.critical)
+
+        perfdata = {
+            "limit": limit,
+            "remaining": remaining
+        }
+
+        do_output('Limit is %s remaining %s' % (limit, remaining), state, perfdata)
 
 
 if __name__ == '__main__':
