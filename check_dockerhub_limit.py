@@ -94,6 +94,7 @@ class DockerHub(object):
 def main():
     parser = ArgumentParser(description="get_dockerhub_limits (Version: %s)" % (VERSION))
 
+
     parser.add_argument("-v", "--verbose", action="store_true", help="increase output verbosity")
     parser.add_argument("-t", "--timeout", help="Timeout in seconds (default 10s)", type=int, default=10)
     args = parser.parse_args(sys.argv[1:])
