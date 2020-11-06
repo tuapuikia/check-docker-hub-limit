@@ -40,8 +40,8 @@ class DockerHub(object):
         self.repository = 'ratelimitpreview/test'
         self.token_url = 'https://auth.docker.io/token?service=registry.docker.io&scope=repository:' + self.repository + ':pull'
         self.registry_url = 'https://registry-1.docker.io/v2/' + self.repository + '/manifests/latest'
-        self.username = ''
-        self.password = ''
+        self.username = username
+        self.password = password
 
         self.verbose = verbose
 
@@ -73,6 +73,9 @@ class DockerHub(object):
         # User has passed in own credentials, or we need anonymous access.
         if self.username and self.password:
             r_token = requests.get(self.token_url, auth=(self.username, self.password))
+
+            if self.verbose:
+                print("Notice: Using Docker Hub credentials for '" + self.username + "'")
         else:
             r_token = requests.get(self.token_url)
 
@@ -135,8 +138,8 @@ def main():
     alarm(args.timeout)
 
     # TODO: Test and document
-    username = os.environ.get('DOCKER_USERNAME')
-    password = os.environ.get('DOCKER_PASSWORD')
+    username = os.environ.get('DOCKERHUB_USERNAME')
+    password = os.environ.get('DOCKERHUB_PASSWORD')
 
     dh = DockerHub(verbose, username, password)
 
