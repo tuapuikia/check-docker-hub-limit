@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
-# NOTE: Each run of this script decreases the remaining limit by 1 
-#
+# Info: Monitoring plugin to check the Docker Hub Rate Limits
+# License: MIT, Copyright (c) 2020-present GitLab B.V.
+# Author: Michael Friedrich <mfriedrich@gitlab.com>
+
 # From https://docs.docker.com/docker-hub/download-rate-limit/#how-can-i-check-my-current-rate
 #
 # > Remember that these headers are best-effort and there will be small variations.
@@ -11,6 +13,7 @@ import sys
 import os
 import traceback
 import requests
+import json
 from signal import signal, alarm, SIGALRM
 from functools import partial
 from argparse import ArgumentParser
@@ -32,6 +35,11 @@ def do_output(text, state=0,perfdata=None,name='Docker Hub'):
     print(o)
     sys.exit(state)
 
+def print_headers(headers):
+    print("HTTP Headers START")
+    print('\r\n'.join('{}: {}'.format(k, v) for k, v in headers.items()),)
+    print("HTTP Headers END")
+
 def handle_sigalrm(signum, frame, timeout=None):
     do_output('Plugin timed out after %d seconds' % timeout, 3)
 
@@ -45,9 +53,13 @@ class DockerHub(object):
 
         self.verbose = verbose
 
-    def limit_extractor(self, str_raw):
+    def do_verbose(self, text):
         if self.verbose:
-            print("Extracting limit from string: " + str_raw)
+            print("Notice: " + text)
+
+    def limit_extractor(self, str_raw):
+        self.do_verbose("Extracting limit from string: " + str(str_raw))
+
         if ";" in str_raw:
             split_arr = str_raw.split(';') # TODO: return other values too?
             if len(split_arr) > 0:
@@ -74,18 +86,18 @@ class DockerHub(object):
         if self.username and self.password:
             r_token = requests.get(self.token_url, auth=(self.username, self.password))
 
-            if self.verbose:
-                print("Notice: Using Docker Hub credentials for '" + self.username + "'")
+            self.do_verbose("Using Docker Hub credentials for '" + self.username + "'")
         else:
             r_token = requests.get(self.token_url)
+
+            self.do_verbose("Using anonymous Docker Hub token")
 
         # error handling
         r_token.raise_for_status()
 
         resp_token = r_token.json()
 
-        if self.verbose:
-            print(resp_token)
+        self.do_verbose("Response token:'" + json.dumps(resp_token) + "'")
 
         token = resp_token.get('token')
 
@@ -108,7 +120,7 @@ class DockerHub(object):
         resp_headers = r_registry.headers
 
         if self.verbose:
-            print(resp_headers)
+            print_headers(resp_headers)
 
         limit = 0
         remaining = 0
@@ -137,7 +149,6 @@ def main():
     signal(SIGALRM, partial(handle_sigalrm, timeout=args.timeout))
     alarm(args.timeout)
 
-    # TODO: Test and document
     username = os.environ.get('DOCKERHUB_USERNAME')
     password = os.environ.get('DOCKERHUB_PASSWORD')
 
@@ -163,5 +174,4 @@ if __name__ == '__main__':
     try:
         sys.exit(main())
     except Exception as e:
-        print("UNKNOWN - Error: %s" % (e))
-        sys.exit(3)
+        do_output("Error: %s" % (e), 3)
