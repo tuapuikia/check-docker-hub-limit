@@ -127,7 +127,12 @@ the plugin script returns `CRITICAL` and changes the exit state into `2`.
 ```
 $ python3 check_docker_hub_limit.py -w 10000 -c 5000
 CRITICAL - Docker Hub: Limit is 5000 remaining 4998|'limit'=5000 'remaining'=4998
+
+$ echo $?
+2
 ```
+
+When a timeout is reached, or another error is thrown, the exit state switches to `3` and the output state becomes `UNKNOWN`.
 
 ## Monitoring Integration
 
