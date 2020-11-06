@@ -95,7 +95,8 @@ class DockerHub(object):
     def get_registry_limits(self):
         headers_registry = { 'Authorization': 'Bearer ' + self.get_token() }
 
-        r_registry = requests.get(self.registry_url, headers=headers_registry)
+        # Use a HEAD request to fetch the headers and avoid a decreased pull count
+        r_registry = requests.head(self.registry_url, headers=headers_registry)
 
         # error handling
         r_registry.raise_for_status()
@@ -108,12 +109,16 @@ class DockerHub(object):
 
         limit = 0
         remaining = 0
+        reset = 0
 
         if "RateLimit-Limit" in resp_headers and "RateLimit-Remaining" in resp_headers:
             limit = self.limit_extractor(resp_headers["RateLimit-Limit"])
             remaining = self.limit_extractor(resp_headers["RateLimit-Remaining"])
 
-        return (limit, remaining)
+        if "RateLimit-Reset" in resp_headers:
+            reset = self.limit_extractor(resp_headers["RateLimit-Reset"])
+
+        return (limit, remaining, reset)
 
 def main():
     parser = ArgumentParser(description="Version: %s" % (VERSION))
@@ -135,7 +140,7 @@ def main():
 
     dh = DockerHub(verbose, username, password)
 
-    (limit, remaining) = dh.get_registry_limits()
+    (limit, remaining, reset) = dh.get_registry_limits()
 
     if limit == 0 and remaining == 0:
         do_output('No limits found. You are safe and probably use a caching proxy already.', 0)
@@ -144,7 +149,8 @@ def main():
 
         perfdata = {
             "limit": limit,
-            "remaining": remaining
+            "remaining": remaining,
+            "reset": reset
         }
 
         do_output('Limit is %s remaining %s' % (limit, remaining), state, perfdata)
