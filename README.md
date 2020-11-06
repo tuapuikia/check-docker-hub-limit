@@ -37,7 +37,27 @@ optional arguments:
                         Timeout in seconds (default 10s)
 ```
 
-Examples:
+### Docker Hub Authentication
+
+In case you want to use your own username and password credentials for hub.docker.com,
+you need to export them into the environment.
+
+```
+export DOCKERHUB_USERNAME='xxx'
+export DOCKERHUB_PASSWORD='xxx'
+```
+
+You can verify the credentials in use with passing the `--verbose` parameter and checking
+for this message:
+
+```
+Notice: Using Docker Hub credentials for 'dnsmichi'
+```
+
+On macOS you can use Oh My Zsh and the [dotenv plugin](https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins/dotenv)
+to automatically source `$HOME/.env`.
+
+### Examples
 
 ```
 $ python3 check_docker_hub_limit.py
