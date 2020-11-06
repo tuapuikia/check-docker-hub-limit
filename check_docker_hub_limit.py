@@ -18,7 +18,7 @@ from signal import signal, alarm, SIGALRM
 from functools import partial
 from argparse import ArgumentParser
 
-VERSION = '1.0.0'
+VERSION = '2.0.0'
 
 # Follows https://www.monitoring-plugins.org/doc/guidelines.html
 STATES = { 0: "OK", 1: "WARNING", 2: "CRITICAL", 3: "UNKNOWN" }

@@ -64,7 +64,7 @@ pip3 install -r requirements.txt
 ```
 usage: check_docker_hub_limit.py [-h] [-w WARNING] [-c CRITICAL] [-v] [-t TIMEOUT]
 
-Version: 1.0.0
+Version: 2.0.0
 
 optional arguments:
   -h, --help            show this help message and exit
